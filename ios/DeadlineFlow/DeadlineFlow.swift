@@ -229,7 +229,7 @@ struct DeadlineFlow: Widget {
         }
         .configurationDisplayName("Deadline Dash")
         .description("Track your nearest deadlines.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemMedium])
     }
 }
 

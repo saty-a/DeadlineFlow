@@ -135,7 +135,7 @@ class TaskCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildCountdownTimer(context, remaining, isExpired),
+                  _buildCountdownTimer(context, remaining, isExpired, task.createdAt),
                   const SizedBox(height: 16),
                   Text(
                     task.name,
@@ -202,7 +202,7 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCountdownTimer(BuildContext context, Duration remaining, bool isExpired) {
+  Widget _buildCountdownTimer(BuildContext context, Duration remaining, bool isExpired, DateTime createdAt) {
     final color = task.isCompleted
         ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey
         : isExpired
@@ -212,9 +212,23 @@ class TaskCard extends StatelessWidget {
         : Theme.of(context).primaryColor;
 
     final bgColor = color.withOpacity(0.08);
+    final darkerColor = HSLColor.fromColor(color).withLightness(
+      (HSLColor.fromColor(color).lightness - 0.15).clamp(0.0, 1.0)
+    ).toColor();
+
+    // Calculate remaining progress: how much time is LEFT (reverse order)
+    final totalDuration = task.deadline.difference(createdAt);
+    double remainingProgress = 1.0;
+    if (!task.isCompleted && !isExpired && totalDuration.inSeconds > 0) {
+      remainingProgress = (remaining.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
+    } else if (isExpired) {
+      remainingProgress = 0.0;
+    } else if (task.isCompleted) {
+      remainingProgress = 0.0;
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
@@ -223,25 +237,62 @@ class TaskCard extends StatelessWidget {
           width: 1.5,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          if (task.isCompleted)
-            Icon(Icons.check_circle, size: 24, color: color)
-          else if (isExpired)
-            Icon(Icons.warning_amber_rounded, size: 24, color: color)
-          else
-            Icon(Icons.timer_outlined, size: 24, color: color),
-          const SizedBox(width: 12),
-          Text(
-            _formatCountdown(remaining),
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: color,
-              letterSpacing: 1.2,
-              fontFeatures: const [
-                FontFeature.tabularFigures(),
+          // Progress bar embedded at the bottom of the container
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: remainingProgress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: darkerColor,
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(remainingProgress < 1.0 ? 3 : 0),
+                          bottomRight: Radius.circular(remainingProgress < 1.0 ? 3 : 0),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Timer content
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (task.isCompleted)
+                  Icon(Icons.check_circle, size: 24, color: color)
+                else if (isExpired)
+                  Icon(Icons.warning_amber_rounded, size: 24, color: color)
+                else
+                  Icon(Icons.timer_outlined, size: 24, color: color),
+                const SizedBox(width: 12),
+                Text(
+                  _formatCountdown(remaining),
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    letterSpacing: 1.2,
+                    fontFeatures: const [
+                      FontFeature.tabularFigures(),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

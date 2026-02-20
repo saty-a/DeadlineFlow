@@ -44,6 +44,11 @@ dependencies:
   webview_flutter: ^4.10.0
   package_info_plus: ^8.1.2
   provider: ^6.1.5
+  flutter_local_notifications: ^18.0.1
+  smooth_page_indicator: ^1.2.0+3
+  permission_handler: ^11.3.1
+  timezone: ^0.10.1
+
 
 dev_dependencies:
   flutter_test:

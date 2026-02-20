@@ -4,6 +4,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../../logic/theme_provider.dart';
 import 'webview_screen.dart';
+import 'widget_gallery_screen.dart';
+import '../../services/notification_service.dart';
+import '../../services/preferences_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -28,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       setState(() {
-        _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+        _appVersion = packageInfo.version+packageInfo.buildNumber;
       });
     } catch (e) {
       setState(() {
@@ -141,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         subtitle: _getThemeName(themeProvider.themeModeToString()),
                         onTap: () => _showThemeDialog(themeProvider),
                       ),
-                      const Divider(height: 1, indent: 56),
+                      const Divider(height: 1),
                       _buildSettingsTile(
                         icon: Icons.palette_outlined,
                         title: 'Primary Color',
@@ -167,7 +170,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             const SizedBox(height: 16),
-            // About Section
+            // Notifications Section
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Notifications',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                  ),
+                  _buildNotificationToggle(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Widgets Section
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Widgets',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.widgets_outlined,
+                    title: 'Widget Gallery',
+                    subtitle: 'Add widget to home screen',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WidgetGalleryScreen(),
+                        ),
+                      );
+                    },
+                    showDivider: false,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -200,7 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'Privacy Policy',
                     onTap: _openPrivacyPolicy,
                   ),
-                  const Divider(height: 1, indent: 56),
+                  const Divider(height: 1),
                   _buildSettingsTile(
                     icon: Icons.star_outline,
                     title: 'Rate App',
@@ -210,19 +291,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            // App Version
             Padding(
               padding: const EdgeInsets.all(24),
               child: Text(
                 'App Version: $_appVersion',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   color: Theme.of(context).textTheme.bodySmall?.color,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -450,6 +530,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNotificationToggle() {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final isEnabled = PreferencesService.instance.notificationsEnabled;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.notifications_outlined,
+                  size: 20,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Deadline Reminders',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Get notified before deadlines',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: isEnabled,
+                onChanged: (value) async {
+                  if (value) {
+                    // Request permission when enabling
+                    final granted = await NotificationService.instance.requestPermission();
+                    if (granted) {
+                      await PreferencesService.instance.setNotificationsEnabled(true);
+                      setState(() {});
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Notification permission denied'),
+                            backgroundColor: Colors.red.shade400,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  } else {
+                    await PreferencesService.instance.setNotificationsEnabled(false);
+                    await NotificationService.instance.cancelAllNotifications();
+                    setState(() {});
+                  }
+                },
+                activeColor: Theme.of(context).primaryColor,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
