@@ -6,6 +6,7 @@ import '../../logic/theme_provider.dart';
 import 'webview_screen.dart';
 import 'widget_gallery_screen.dart';
 import '../../services/notification_service.dart';
+import '../../services/notification_preferences_service.dart';
 import '../../services/preferences_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -199,6 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   _buildNotificationToggle(),
+                  _buildReminderIntervals(),
                 ],
               ),
             ),
@@ -486,13 +488,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
                 size: 20,
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ),
             const SizedBox(width: 16),
@@ -535,7 +537,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildNotificationToggle() {
     return StatefulBuilder(
-      builder: (context, setState) {
+      builder: (context, setLocalState) {
         final isEnabled = PreferencesService.instance.notificationsEnabled;
 
         return Padding(
@@ -545,13 +547,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.notifications_outlined,
                   size: 20,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
               ),
               const SizedBox(width: 16),
@@ -586,7 +588,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final granted = await NotificationService.instance.requestPermission();
                     if (granted) {
                       await PreferencesService.instance.setNotificationsEnabled(true);
-                      setState(() {});
+                      setLocalState(() {});
+                      setState(() {}); // rebuild reminder section
                     } else {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -604,10 +607,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   } else {
                     await PreferencesService.instance.setNotificationsEnabled(false);
                     await NotificationService.instance.cancelAllNotifications();
-                    setState(() {});
+                    setLocalState(() {});
+                    setState(() {}); // rebuild reminder section
                   }
                 },
-                activeColor: Theme.of(context).primaryColor,
+                activeThumbColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                activeTrackColor: Theme.of(context).colorScheme.primaryContainer,
               ),
             ],
           ),
@@ -615,4 +620,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
     );
   }
+
+  Widget _buildReminderIntervals() {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final isNotificationsEnabled =
+            PreferencesService.instance.notificationsEnabled;
+
+        if (!isNotificationsEnabled) return const SizedBox.shrink();
+
+        final enabled =
+            NotificationPreferencesService.instance.enabledIntervals;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Schedule reminders for each task',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  ...ReminderInterval.values.map((interval) {
+                    final isChecked = enabled.contains(interval);
+                    return InkWell(
+                      onTap: () async {
+                        await NotificationPreferencesService.instance
+                            .toggleInterval(interval);
+                        setState(() {});
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: isChecked,
+                              onChanged: (_) async {
+                                await NotificationPreferencesService.instance
+                                    .toggleInterval(interval);
+                                setState(() {});
+                              },
+                              activeColor: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              checkColor: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              interval.label,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }

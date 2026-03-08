@@ -6,6 +6,7 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onToggleComplete;
+  final VoidCallback onTryAgain;
 
   const TaskCard({
     super.key,
@@ -13,6 +14,7 @@ class TaskCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onToggleComplete,
+    required this.onTryAgain,
   });
 
   @override
@@ -86,7 +88,7 @@ class TaskCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onEdit,
+            onTap: (task.isCompleted || isExpired) ? null : onEdit,
             borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -173,6 +175,9 @@ class TaskCard extends StatelessWidget {
   }
 
   Widget _buildCheckbox(BuildContext context) {
+    final isExpired = task.deadline.isBefore(DateTime.now()) && !task.isCompleted;
+    if (task.isCompleted || isExpired) return const SizedBox.shrink();
+
     return GestureDetector(
       onTap: onToggleComplete,
       child: AnimatedContainer(
@@ -180,24 +185,13 @@ class TaskCard extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: task.isCompleted
-              ? Theme.of(context).primaryColor
-              : Colors.transparent,
+          color: Colors.transparent,
           border: Border.all(
-            color: task.isCompleted
-                ? Theme.of(context).primaryColor
-                : Theme.of(context).dividerColor,
+            color: Theme.of(context).dividerColor,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: task.isCompleted
-            ? const Icon(
-          Icons.check_rounded,
-          color: Colors.white,
-          size: 18,
-        )
-            : null,
       ),
     );
   }
@@ -302,17 +296,34 @@ class TaskCard extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    final now = DateTime.now();
+    final isExpired = task.deadline.isBefore(now) && !task.isCompleted;
+    final showTryAgain = task.isCompleted || isExpired;
+
     return PopupMenuButton<String>(
       icon: Icon(Icons.more_vert_rounded, color: Theme.of(context).textTheme.bodySmall?.color),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: (value) {
         if (value == 'edit') {
           onEdit();
+        } else if (value == 'try_again') {
+          onTryAgain();
         } else if (value == 'delete') {
           onDelete();
         }
       },
       itemBuilder: (context) => [
+        if (showTryAgain)
+          PopupMenuItem(
+            value: 'try_again',
+            child: Row(
+              children: [
+                Icon(Icons.refresh_rounded, size: 20, color: Colors.green.shade600),
+                const SizedBox(width: 12),
+                Text('Try Again', style: TextStyle(color: Colors.green.shade600)),
+              ],
+            ),
+          ),
         PopupMenuItem(
           value: 'edit',
           child: Row(

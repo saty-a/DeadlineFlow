@@ -107,17 +107,18 @@ class _AddTaskFormState extends State<AddTaskForm>
   }
 
   Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             isEditing ? Icons.edit_calendar_outlined : Icons.timer_outlined,
-            color: Theme.of(context).primaryColor,
+            color: colorScheme.onPrimaryContainer,
             size: 24,
           ),
         ),
@@ -153,7 +154,7 @@ class _AddTaskFormState extends State<AddTaskForm>
               hintText: 'e.g., Project submission, Meeting',
               prefixIcon: Icon(
                 Icons.title_rounded,
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -195,7 +196,7 @@ class _AddTaskFormState extends State<AddTaskForm>
                 padding: const EdgeInsets.only(bottom: 48),
                 child: Icon(
                   Icons.description_outlined,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               border: OutlineInputBorder(
@@ -298,6 +299,7 @@ class _AddTaskFormState extends State<AddTaskForm>
     final isToday = _selectedDate.year == now.year &&
         _selectedDate.month == now.month &&
         _selectedDate.day == now.day;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return InkWell(
       onTap: _selectDate,
@@ -317,12 +319,12 @@ class _AddTaskFormState extends State<AddTaskForm>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.calendar_today_rounded,
-                      color: Theme.of(context).primaryColor,
+                      color: colorScheme.onPrimaryContainer,
                       size: 16,
                     ),
                   ),
@@ -373,6 +375,7 @@ class _AddTaskFormState extends State<AddTaskForm>
     }
 
   Widget _buildTimeSelector() {
+    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: _selectTime,
       borderRadius: BorderRadius.circular(16),
@@ -391,12 +394,12 @@ class _AddTaskFormState extends State<AddTaskForm>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.access_time_rounded,
-                    color: Theme.of(context).primaryColor,
+                    color: colorScheme.onPrimaryContainer,
                     size: 16,
                   ),
                 ),
@@ -428,6 +431,7 @@ class _AddTaskFormState extends State<AddTaskForm>
 
   Future<void> _selectDate() async {
     final now = DateTime.now();
+    final theme = Theme.of(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate.isBefore(now) ? now : _selectedDate,
@@ -435,13 +439,14 @@ class _AddTaskFormState extends State<AddTaskForm>
       lastDate: DateTime(now.year + 5),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: theme.copyWith(
             colorScheme: ColorScheme.fromSeed(
-              seedColor: Theme.of(context).primaryColor,
-              primary: Theme.of(context).primaryColor,
+              seedColor: theme.primaryColor,
+              brightness: theme.brightness,
+              primary: theme.primaryColor,
               onPrimary: Colors.white,
-              surface: Theme.of(context).cardColor,
-              onSurface: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+              surface: theme.cardColor,
+              onSurface: theme.textTheme.bodyLarge?.color ?? Colors.black,
             ),
           ),
           child: child!,
@@ -455,18 +460,20 @@ class _AddTaskFormState extends State<AddTaskForm>
   }
 
   Future<void> _selectTime() async {
+    final theme = Theme.of(context);
     final picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: theme.copyWith(
             colorScheme: ColorScheme.fromSeed(
-              seedColor: Theme.of(context).primaryColor,
-              primary: Theme.of(context).primaryColor,
+              seedColor: theme.primaryColor,
+              brightness: theme.brightness,
+              primary: theme.primaryColor,
               onPrimary: Colors.white,
-              surface: Theme.of(context).cardColor,
-              onSurface: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+              surface: theme.cardColor,
+              onSurface: theme.textTheme.bodyLarge?.color ?? Colors.black,
             ),
           ),
           child: child!,

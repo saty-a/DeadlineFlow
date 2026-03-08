@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/task.dart';
 import '../../data/repositories/task_repository.dart';
+import '../../services/notification_service.dart';
 import 'task_event.dart';
 import 'task_state.dart';
 
@@ -17,6 +18,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<UpdateTask>(_onUpdateTask);
     on<DeleteTask>(_onDeleteTask);
     on<ToggleTaskComplete>(_onToggleTaskComplete);
+    on<RescheduleAllNotifications>(_onRescheduleAllNotifications);
     on<_TickInternal>(_onTick);
 
     _startTicker();
@@ -51,6 +53,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         status: TaskStatus.success,
       ));
       await _repository.saveTasks(updatedTasks);
+      await NotificationService.instance.scheduleTaskReminders(event.task);
     } catch (e) {
       emit(state.copyWith(
         status: TaskStatus.error,
@@ -71,6 +74,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         status: TaskStatus.success,
       ));
       await _repository.saveTasks(updatedTasks);
+      await NotificationService.instance.scheduleTaskReminders(event.task);
     } catch (e) {
       emit(state.copyWith(
         status: TaskStatus.error,
@@ -91,6 +95,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         status: TaskStatus.success,
       ));
       await _repository.saveTasks(updatedTasks);
+      await NotificationService.instance.cancelTaskNotifications(event.taskId);
     } catch (e) {
       emit(state.copyWith(
         status: TaskStatus.error,
@@ -115,11 +120,28 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         status: TaskStatus.success,
       ));
       await _repository.saveTasks(updatedTasks);
+      // Cancel reminders when completed, reschedule when uncompleted
+      final toggled = updatedTasks.firstWhere((t) => t.id == event.taskId);
+      if (toggled.isCompleted) {
+        await NotificationService.instance.cancelTaskNotifications(event.taskId);
+      } else {
+        await NotificationService.instance.scheduleTaskReminders(toggled);
+      }
     } catch (e) {
       emit(state.copyWith(
         status: TaskStatus.error,
         errorMessage: 'Failed to toggle task: $e',
       ));
+    }
+  }
+
+  Future<void> _onRescheduleAllNotifications(
+      RescheduleAllNotifications event, Emitter<TaskState> emit) async {
+    final now = DateTime.now();
+    for (final task in state.tasks) {
+      if (!task.isCompleted && task.deadline.isAfter(now)) {
+        await NotificationService.instance.scheduleTaskReminders(task);
+      }
     }
   }
 

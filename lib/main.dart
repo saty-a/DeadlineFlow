@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'data/models/task.dart';
 import 'data/repositories/task_repository.dart';
 import 'logic/theme_provider.dart';
 import 'presentation/screens/splash_screen.dart';
+import 'services/notification_preferences_service.dart';
 import 'services/notification_service.dart';
 import 'services/preferences_service.dart';
 
@@ -18,6 +20,10 @@ void main() async {
   // Initialize services
   await PreferencesService.instance.initialize();
   await NotificationService.instance.initialize();
+
+  // Initialize notification preferences
+  final prefs = await SharedPreferences.getInstance();
+  await NotificationPreferencesService.instance.initialize(prefs);
 
   final taskRepository = TaskRepository();
   await taskRepository.initialize();

@@ -17,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  String _filterOption = 'all'; // all, active, completed, expired
+  String _filterOption = 'active'; // all, active, completed, expired
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ToggleTaskComplete(task.id),
                           );
                         },
+                        onTryAgain: () => _showEditTaskSheet(context, task),
                       );
                     },
                     childCount: filteredTasks.length,
@@ -118,8 +119,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     .where((t) =>
                 !t.isCompleted && t.deadline.isAfter(DateTime.now()))
                     .length;
+                if (activeCount == 0) return const SizedBox.shrink();
                 return Text(
-                  '$activeCount active countdowns',
+                  '$activeCount active countdown${activeCount == 1 ? '' : 's'}',
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodySmall?.color,
                     fontSize: 14,
@@ -141,7 +143,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               MaterialPageRoute(
                 builder: (context) => const SettingsScreen(),
               ),
-            );
+            ).then((_) {
+              if (context.mounted) {
+                context.read<TaskBloc>().add(RescheduleAllNotifications());
+              }
+            });
           },
         ),
       ],

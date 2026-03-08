@@ -41,3 +41,5 @@ class ToggleTaskComplete extends TaskEvent {
   @override
   List<Object?> get props => [taskId];
 }
+
+class RescheduleAllNotifications extends TaskEvent {}
