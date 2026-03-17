@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_dark2"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:id="@+id/circular_circle"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:background="@drawable/shape_circle_dark"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:layout_above="@+id/circular_task_name"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/circular_days"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="22"
+            android:textColor="#9B7FF0"
+            android:textSize="38sp"
+            android:fontFamily="sans-serif-black"
+            android:lineSpacingMultiplier="0.9" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="days"
+            android:textColor="#80FFFFFF"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/circular_task_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Task Name"
+        android:textColor="#99FFFFFF"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/circular_expired"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EXPIRED"
+        android:textColor="#F44336"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-bold"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+</RelativeLayout>

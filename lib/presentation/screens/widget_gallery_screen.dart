@@ -2,6 +2,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 
+enum WidgetStyle { bold, circular, minimal, ticker }
+
 class WidgetGalleryScreen extends StatefulWidget {
   const WidgetGalleryScreen({super.key});
 
@@ -41,16 +43,30 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
     }
   }
 
-  Future<void> _addWidget() async {
+  String _providerName(WidgetStyle style) {
+    switch (style) {
+      case WidgetStyle.bold:
+        return 'BoldWidgetProvider';
+      case WidgetStyle.circular:
+        return 'CircularWidgetProvider';
+      case WidgetStyle.minimal:
+        return 'MinimalWidgetProvider';
+      case WidgetStyle.ticker:
+        return 'TickerWidgetProvider';
+    }
+  }
+
+  Future<void> _addWidget(WidgetStyle style) async {
     if (!_isPinSupported) {
       _showManualInstructions();
       return;
     }
 
+    final providerName = _providerName(style);
     try {
       await HomeWidget.requestPinWidget(
-        androidName: 'HomeWidgetProvider',
-        qualifiedAndroidName: 'com.sun2.chessclock.HomeWidgetProvider',
+        androidName: providerName,
+        qualifiedAndroidName: 'com.sun2.chessclock.$providerName',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,9 +74,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
             content: const Text('Widget added to home screen!'),
             backgroundColor: Colors.green.shade400,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -71,9 +85,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
             content: Text('Failed to add widget: $e'),
             backgroundColor: Colors.red.shade400,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -186,7 +198,30 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Manual instructions card
+                  _buildWidgetCard(
+                    style: WidgetStyle.bold,
+                    title: 'Bold',
+                    description: 'Vibrant colored background with circular countdown',
+                  ),
+                  const SizedBox(height: 16),
+                  _buildWidgetCard(
+                    style: WidgetStyle.circular,
+                    title: 'Circular',
+                    description: 'Dark background with a large circular day counter',
+                  ),
+                  const SizedBox(height: 16),
+                  _buildWidgetCard(
+                    style: WidgetStyle.minimal,
+                    title: 'Minimal',
+                    description: 'Clean dark layout with prominent day count',
+                  ),
+                  const SizedBox(height: 16),
+                  _buildWidgetCard(
+                    style: WidgetStyle.ticker,
+                    title: 'Ticker',
+                    description: 'Dark background with a pill-style countdown display',
+                  ),
+                  const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -202,11 +237,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: primaryColor,
-                              size: 20,
-                            ),
+                            Icon(Icons.info_outline, color: primaryColor, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               'Widget not appearing?',
@@ -236,7 +267,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                         _buildInstructionStep(4, 'Select and drag the widget to your home screen'),
                         const SizedBox(height: 12),
                         Text(
-                          '📱 Note: Different launchers may have slightly different steps',
+                          'Note: Different launchers may have slightly different steps',
                           style: TextStyle(
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
@@ -246,17 +277,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  // Widget Card
-                  _buildWidgetCard(
-                    title: 'Deadline Widget',
-                    description: 'Track your nearest deadlines at a glance',
-                    subtitle: 'You can also find this in your widget drawer!',
-                    previewWidget: _buildWidgetPreview(context),
-                    onAdd: _addWidget,
-                  ),
                   const SizedBox(height: 16),
-                  // Platform note
                   if (!Platform.isAndroid)
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -270,24 +291,18 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.warning_amber_rounded,
-                            color: Colors.orange.shade700,
-                            size: 24,
-                          ),
+                          Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 24),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'One-tap widget adding is only available on Android. On iOS, please add widgets through the widget gallery.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.orange.shade700,
-                              ),
+                              style: TextStyle(fontSize: 13, color: Colors.orange.shade700),
                             ),
                           ),
                         ],
                       ),
                     ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -295,16 +310,14 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
   }
 
   Widget _buildWidgetCard({
+    required WidgetStyle style,
     required String title,
     required String description,
-    required String subtitle,
-    required Widget previewWidget,
-    required VoidCallback onAdd,
   }) {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).shadowColor.withOpacity(0.06),
@@ -316,54 +329,48 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Preview area
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Container(
+              width: double.infinity,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF1A1A2E)
+                  : const Color(0xFFF0F0F5),
+              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 40),
+              child: Center(child: _buildPreview(style)),
+            ),
+          ),
+          // Info + button
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
-                const SizedBox(width: 16),
-                previewWidget,
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 4),
           const Divider(height: 1),
           InkWell(
-            onTap: onAdd,
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
-            ),
+            onTap: () => _addWidget(style),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -372,7 +379,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                   Icon(
                     Icons.add,
                     size: 20,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                    color: Theme.of(context).primaryColor,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -380,7 +387,7 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 ],
@@ -392,90 +399,350 @@ class _WidgetGalleryScreenState extends State<WidgetGalleryScreen> {
     );
   }
 
-  Widget _buildWidgetPreview(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-    
+  Widget _buildPreview(WidgetStyle style) {
+    switch (style) {
+      case WidgetStyle.bold:
+        return _BoldWidgetPreview();
+      case WidgetStyle.circular:
+        return _CircularWidgetPreview();
+      case WidgetStyle.minimal:
+        return _MinimalWidgetPreview();
+      case WidgetStyle.ticker:
+        return _TickerWidgetPreview();
+    }
+  }
+}
+
+// ─── Style 1: Bold ───────────────────────────────────────────────────────────
+
+class _BoldWidgetPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const accent = Color(0xFFFF2D78);
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Project Alpha',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Large circle
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '22',
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        height: 1,
+                      ),
+                    ),
+                    Text(
+                      'days',
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Pills column
+              Column(
+                children: [
+                  _pill('4h'),
+                  const SizedBox(height: 8),
+                  _pill('21m'),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pill(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFFFF2D78),
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Style 2: Circular ───────────────────────────────────────────────────────
+
+class _CircularWidgetPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const bg = Color(0xFF1C1C2E);
+    const accent = Color(0xFF9B7FF0);
     return Container(
       width: 140,
-      padding: const EdgeInsets.all(12),
+      height: 140,
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.grey.shade800
-            : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-          width: 1,
-        ),
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: bg,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white12, width: 1.5),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text(
+                  '22',
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    height: 1,
+                  ),
+                ),
+                Text(
+                  'days',
+                  style: TextStyle(color: Colors.white54, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Project Alpha',
+            style: TextStyle(color: Colors.white60, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Style 3: Minimal ────────────────────────────────────────────────────────
+
+class _MinimalWidgetPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const bg = Color(0xFF12172B);
+    const accent = Color(0xFF4FC3F7);
+    return Container(
+      width: 240,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          const Text(
+            'Project Alpha',
+            style: TextStyle(
+              color: accent,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: const [
               Text(
-                'DEADLINES',
+                '22',
                 style: TextStyle(
-                  fontSize: 8,
+                  color: Colors.white,
+                  fontSize: 52,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  height: 1,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '2',
-                  style: TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange.shade700,
-                  ),
+              SizedBox(width: 8),
+              Text(
+                'days',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Project Alpha',
+          const SizedBox(height: 4),
+          const Text(
+            '4 hrs  21 mins',
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          Text(
-            '1d:05h:32m',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-              fontFamily: 'monospace',
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Beta Release',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          Text(
-            '3d:12h:48m',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-              fontFamily: 'monospace',
+              color: Colors.white38,
+              fontSize: 13,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Style 4: Ticker ─────────────────────────────────────────────────────────
+
+class _TickerWidgetPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const bg = Color(0xFF12172B);
+    const pillColor = Color(0xFF3A5A8A);
+    const accent = Color(0xFF4FC3F7);
+    return Container(
+      width: 240,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Project Alpha',
+            style: TextStyle(
+              color: accent,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: pillColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    _TickerNumber('22'),
+                    _TickerDot(),
+                    _TickerNumber('04'),
+                    _TickerDot(),
+                    _TickerNumber('21'),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    _TickerLabel('days'),
+                    SizedBox(width: 28),
+                    _TickerLabel('hours'),
+                    SizedBox(width: 24),
+                    _TickerLabel('min'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TickerNumber extends StatelessWidget {
+  final String value;
+  const _TickerNumber(this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      value,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
+        fontFamily: 'monospace',
+      ),
+    );
+  }
+}
+
+class _TickerDot extends StatelessWidget {
+  const _TickerDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 6),
+      child: Column(
+        children: [
+          Text('.', style: TextStyle(color: Colors.white54, fontSize: 20, height: 0.8)),
+          Text('.', style: TextStyle(color: Colors.white54, fontSize: 20, height: 0.8)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TickerLabel extends StatelessWidget {
+  final String text;
+  const _TickerLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white54,
+        fontSize: 11,
       ),
     );
   }

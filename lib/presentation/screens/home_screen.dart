@@ -61,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 );
               }
-
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                 sliver: SliverList(

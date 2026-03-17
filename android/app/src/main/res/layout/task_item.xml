@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-
-    android:paddingVertical="12dp"
+    android:paddingVertical="10dp"
     android:paddingHorizontal="4dp">
 
     <TextView
@@ -12,50 +11,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Task Name"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:textColor="#222222"
-        android:fontFamily="sans-serif-medium"
         android:maxLines="1"
         android:ellipsize="end" />
 
-    <!-- Days + Hours + Chronometer Layout -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/widget_item_countdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="4dp">
-
-        <TextView
-            android:id="@+id/widget_item_days"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0d:"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#FF9800"
-            android:fontFamily="monospace"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/widget_item_hours"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="00h:"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#FF9800"
-            android:fontFamily="monospace" />
-
-        <Chronometer
-            android:id="@+id/widget_item_chronometer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#FF9800"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:fontFamily="monospace"
-            android:countDown="true" />
-    </LinearLayout>
+        android:layout_marginTop="3dp"
+        android:text="00h 00m"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#FF9800" />
 
 </LinearLayout>
